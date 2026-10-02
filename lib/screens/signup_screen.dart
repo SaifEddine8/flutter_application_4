@@ -1,13 +1,28 @@
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
+Future<UserCredential> signInWithGoogle() async {
+  // Trigger the authentication flow
+  final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
 
+  // Obtain the auth details from the request
+  final GoogleSignInAuthentication googleAuth = googleUser!.authentication;
+
+  // Create a new credential
+  final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+
+  // Once signed in, return the UserCredential
+  return await FirebaseAuth.instance.signInWithCredential(credential);
+}
 class _SignUpScreenState extends State<SignUpScreen> {
   Future<String> signUp({required String email,required String password}) async{
     try{
@@ -15,6 +30,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         email: email, 
         password: password
         );
+        FirebaseFirestore.instance.collection('usersCollection')
+        .doc(credential.user!.uid)
+        .set({
+            'email': _emailController.text.trim(),
+             'password': _passwordController.text.trim(),
+                                
+             }).then((value) => ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('User Added Successfully')),
+             ))
+              .catchError((error) => print("Failed to add user: $error"));
+                        
+                        
         return 'done';
     } on FirebaseAuthException catch(e){
       if(e.code=='weak-password')
@@ -135,7 +162,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       );
                       if(result=='done')
                       {
-                        Navigator.of(context).push(MaterialPageRoute(
+                        
+                        Navigator.push(context, MaterialPageRoute(
                           builder: (context)=>LoginScreen()));
                       }
                       else
@@ -146,22 +174,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     _emailController.clear();
                     _passwordController.clear();
                   },
-                  child: const Text('إنشاء حساب'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('إنشاء حساب',
+                  style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
                 SizedBox(height: 10,),
                 Row(
-                  mainAxisAlignment: .center,
+                  mainAxisAlignment:  MainAxisAlignment.center,
                   children: [
                     Text('Already have an account! '),
                     InkWell(
                       onTap:(){
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginScreen()));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>LoginScreen()));
                       } ,
                       child: Text('Login',style: TextStyle(color: Colors.blue,fontWeight: .bold),),
                     
                     )
                   ],
-                )
+                ),
+                SizedBox(height: 25,),
+                ElevatedButton(
+                  onPressed: ()=>signInWithGoogle(), 
+                  child: Row(
+                    mainAxisAlignment: .center,
+                    children: [
+                      Image.network('https://cdn2.hubspot.net/hubfs/53/image8-2.jpg',height: 40,),
+                      Text('Sign in with google')
+                    ],
+                  ))
               ],
             ),
           ),

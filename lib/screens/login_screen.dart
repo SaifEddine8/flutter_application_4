@@ -144,8 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                       if(result=='done')
                       {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context)=>LoginScreen()));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context)=>HomeScreen()));
                       }
                       else
                       {
@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text('Dont have an account! '),
                     InkWell(
                       onTap:(){
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomeScreen()));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>SignUpScreen()));
                       } ,
                       child: Text('Sign Up',style: TextStyle(color: Colors.blue,fontWeight: .bold),),
                     
