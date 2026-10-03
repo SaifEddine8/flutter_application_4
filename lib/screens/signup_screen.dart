@@ -1,72 +1,26 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
+import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
-Future<UserCredential> signInWithGoogle() async {
-  // Trigger the authentication flow
-  final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
 
-  // Obtain the auth details from the request
-  final GoogleSignInAuthentication googleAuth = googleUser!.authentication;
-
-  // Create a new credential
-  final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
-
-  // Once signed in, return the UserCredential
-  return await FirebaseAuth.instance.signInWithCredential(credential);
-}
 class _SignUpScreenState extends State<SignUpScreen> {
-  Future<String> signUp({required String email,required String password}) async{
-    try{
-      final credential=await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email, 
-        password: password
-        );
-        FirebaseFirestore.instance.collection('usersCollection')
-        .doc(credential.user!.uid)
-        .set({
-            'email': _emailController.text.trim(),
-             'password': _passwordController.text.trim(),
-                                
-             }).then((value) => ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text('User Added Successfully')),
-             ))
-              .catchError((error) => print("Failed to add user: $error"));
-                        
-                        
-        return 'done';
-    } on FirebaseAuthException catch(e){
-      if(e.code=='weak-password')
-      {
-        return('the password provided is too weak.');
-      }
-      else if(e.code=='email-already-in-use')
-      {
-        return('the account already exists for that email');
-      }
-
-    }
-    catch(e){
-      return(e.toString());
-    }
-    return 'error';
-    
-
-  }
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordObscured = true;
+  AuthService authService = AuthService();
 
   @override
   void dispose() {
@@ -77,15 +31,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إنشاء حساب جديد'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('إنشاء حساب جديد'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -95,7 +44,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 10),
-                const Icon(Icons.person_add_alt_1_outlined, size: 80, color: Colors.indigo),
+                const Icon(
+                  Icons.person_add_alt_1_outlined,
+                  size: 80,
+                  color: Colors.indigo,
+                ),
                 const SizedBox(height: 20),
                 const Text(
                   'انضم إلينا اليوم',
@@ -105,7 +58,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 30),
 
                 // الاسم
-                
 
                 // البريد الإلكتروني
                 TextFormField(
@@ -114,7 +66,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'البريد الإلكتروني',
                     prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -135,7 +89,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: InputDecoration(
                     labelText: 'كلمة المرور',
                     prefixIcon: const Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -149,27 +105,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                
                 const SizedBox(height: 24),
 
                 // زر إنشاء الحساب
                 ElevatedButton(
-                  onPressed: () async{
-                    
-                      String result=await signUp(
-                        email: _emailController.text.trim(),
-                        password: _passwordController.text.trim(),
+                  onPressed: () async {
+                    String result = await authService.signUp(
+                      email: _emailController.text,
+                      password: _passwordController.text,
+                      context: context,
+                    );
+                    if (result == 'done') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                       );
-                      if(result=='done')
-                      {
-                        
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context)=>LoginScreen()));
-                      }
-                      else
-                      {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
-                      }
+                    } else {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(result)));
+                    }
                     // Future.delayed(Duration(seconds: 10));
                     _emailController.clear();
                     _passwordController.clear();
@@ -177,35 +132,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: Colors.indigo,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('إنشاء حساب',
-                  style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: const Text(
+                    'إنشاء حساب',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
-                SizedBox(height: 10,),
+                SizedBox(height: 10),
                 Row(
-                  mainAxisAlignment:  MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('Already have an account! '),
                     InkWell(
-                      onTap:(){
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>LoginScreen()));
-                      } ,
-                      child: Text('Login',style: TextStyle(color: Colors.blue,fontWeight: .bold),),
-                    
-                    )
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Login',
+                        style: TextStyle(color: Colors.blue, fontWeight: .bold),
+                      ),
+                    ),
                   ],
                 ),
-                SizedBox(height: 25,),
+                SizedBox(height: 25),
                 ElevatedButton(
-                  onPressed: ()=>signInWithGoogle(), 
+                  onPressed: () => authService.signInWithGoogle(),
                   child: Row(
                     mainAxisAlignment: .center,
                     children: [
-                      Image.network('https://cdn2.hubspot.net/hubfs/53/image8-2.jpg',height: 40,),
-                      Text('Sign in with google')
+                      Image.network(
+                        'https://cdn2.hubspot.net/hubfs/53/image8-2.jpg',
+                        height: 40,
+                      ),
+                      Text('Sign in with google'),
                     ],
-                  ))
+                  ),
+                ),
               ],
             ),
           ),
