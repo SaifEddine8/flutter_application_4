@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/screens/admin_dashboard.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
 import 'package:flutter_application_4/screens/signup_screen.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
@@ -107,14 +109,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 // زر تسجيل الدخول
                 ElevatedButton(
                   onPressed: () async {
-                    String result = await authService.login(
+                    if(_formKey.currentState!.validate())
+                    {
+                      String result = await authService.login(
                       email: _emailController.text,
                       password: _passwordController.text,
                     );
-                    if (result == 'done') {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
-                      );
+                    if (result == 'done login') {
+                      // Navigator.of(context).pushReplacement(
+                      //   MaterialPageRoute(builder: (context) => HomeScreen()),
+                      // );
+                      final doc=await FirebaseFirestore.instance
+                      .collection('usersCollection')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .get();
+                      if(doc['role']=='user')
+                      {
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>HomeScreen()), (route) => false);
+                      }
+                      if(doc['role']=='admin')
+                      {
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>AdminDashboard()), (route) => false);
+                      }
                     } else {
                       ScaffoldMessenger.of(
                         context,
@@ -123,6 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Future.delayed(Duration(seconds: 10));
                     _emailController.clear();
                     _passwordController.clear();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -158,7 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: 25),
                 ElevatedButton(
-                  onPressed: () => authService.signInWithGoogle(),
+                  onPressed: ()async {
+                    
+                    authService.signInWithGoogle();
+                  },
                   child: Row(
                     mainAxisAlignment: .center,
                     children: [

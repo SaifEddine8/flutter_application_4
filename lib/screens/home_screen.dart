@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/screens/login_screen.dart';
 import 'package:flutter_application_4/screens/profile_info.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 
@@ -37,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Logout'),
               onTap: () {
                 authService.signout();
-                setState(() {});
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>LoginScreen()), (route) => false);
+                
               },
             ),
           ],

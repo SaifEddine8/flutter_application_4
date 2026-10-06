@@ -5,38 +5,32 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
-        .authenticate();
-
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication googleAuth = googleUser!.authentication;
-
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      idToken: googleAuth.idToken,
+    final userInGoogle=await GoogleSignIn.instance.authenticate();
+    final googleAuth=await userInGoogle.authentication;
+    final credential=GoogleAuthProvider.credential(
+    idToken: googleAuth.idToken
     );
-
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+    final userCredential=await FirebaseAuth.instance.signInWithCredential(credential);
+    return userCredential;
   }
 
-  Future login({required String email, required String password}) async {
+  Future<String> login({required String email, required String password}) async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      return 'done';
+      return 'done login';
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-email.') {
         return 'invalid email';
       } else if (e.code == 'invalid-credential') {
         return ('invalid credential');
       }
+      return e.message?? e.code;
     }
-    return 'error';
+    
   }
 
   Future<String> signUp({
@@ -53,7 +47,7 @@ class AuthService {
       FirebaseFirestore.instance
           .collection('usersCollection')
           .doc(credential.user!.uid)
-          .set({'email': email.trim(), 'password': password.trim()})
+          .set({'email': email.trim(), 'role': 'user'})
           .then(
             (value) => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('User Added Successfully')),
@@ -74,7 +68,7 @@ class AuthService {
     return 'error';
   }
 
-  void signout() {
-    FirebaseAuth.instance.signOut();
+  void signout()async {
+  await  FirebaseAuth.instance.signOut();
   }
 }

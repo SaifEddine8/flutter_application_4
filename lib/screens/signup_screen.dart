@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_4/screens/home_screen.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -110,7 +111,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 // زر إنشاء الحساب
                 ElevatedButton(
                   onPressed: () async {
-                    String result = await authService.signUp(
+                    if(_formKey.currentState!.validate())
+                    {
+                      String result = await authService.signUp(
                       email: _emailController.text,
                       password: _passwordController.text,
                       context: context,
@@ -124,10 +127,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ScaffoldMessenger.of(
                         context,
                       ).showSnackBar(SnackBar(content: Text(result)));
+                      
                     }
                     // Future.delayed(Duration(seconds: 10));
                     _emailController.clear();
                     _passwordController.clear();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
