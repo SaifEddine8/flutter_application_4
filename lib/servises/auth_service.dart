@@ -5,16 +5,21 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   Future<UserCredential> signInWithGoogle() async {
-    final userInGoogle=await GoogleSignIn.instance.authenticate();
-    final googleAuth=await userInGoogle.authentication;
-    final credential=GoogleAuthProvider.credential(
-    idToken: googleAuth.idToken
+    final userInGoogle = await GoogleSignIn.instance.authenticate();
+    final googleAuth = await userInGoogle.authentication;
+    final credential = GoogleAuthProvider.credential(
+      idToken: googleAuth.idToken,
     );
-    final userCredential=await FirebaseAuth.instance.signInWithCredential(credential);
+    final userCredential = await FirebaseAuth.instance.signInWithCredential(
+      credential,
+    );
     return userCredential;
   }
 
-  Future<String> login({required String email, required String password}) async {
+  Future<String> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
@@ -28,9 +33,8 @@ class AuthService {
       } else if (e.code == 'invalid-credential') {
         return ('invalid credential');
       }
-      return e.message?? e.code;
+      return e.message ?? e.code;
     }
-    
   }
 
   Future<String> signUp({
@@ -47,7 +51,12 @@ class AuthService {
       FirebaseFirestore.instance
           .collection('usersCollection')
           .doc(credential.user!.uid)
-          .set({'email': email.trim(), 'role': 'user'})
+          .set({
+            'email': email.trim(),
+            'role': email.endsWith('@Admin.com'.toLowerCase())
+                ? 'admin'
+                : 'user',
+          })
           .then(
             (value) => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('User Added Successfully')),
@@ -68,7 +77,7 @@ class AuthService {
     return 'error';
   }
 
-  void signout()async {
-  await  FirebaseAuth.instance.signOut();
+  void signout() async {
+    await FirebaseAuth.instance.signOut();
   }
 }
