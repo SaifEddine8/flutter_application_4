@@ -168,7 +168,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 SizedBox(height: 25),
                 ElevatedButton(
-                  onPressed: () => authService.signInWithGoogle(),
+                  onPressed: () => authService.signInWithGoogle(context),
                   child: Row(
                     mainAxisAlignment: .center,
                     children: [

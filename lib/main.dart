@@ -3,16 +3,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter_application_4/firebase_options.dart';
 import 'package:flutter_application_4/screens/admin_dashboard.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
+import 'package:flutter_application_4/screens/nav_bar.dart';
 import 'package:flutter_application_4/screens/signup_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 void main() async {
   // 1. التأكد من تحضير بيئة أداء اليدجيتس
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+
+  );
   // await FirebaseAnalytics.instance.logEvent(
   //   name: 'selected_content',
   //   parameters: {
@@ -23,6 +28,7 @@ void main() async {
   //   );
   // FirebaseAuth.instance.useAuthEmulator('localhost',9099);
   await GoogleSignIn.instance.initialize();
+  // await FirebaseAuth.instance.signOut();
   runApp(MyApp());
 }
 
@@ -47,11 +53,13 @@ class MyApp extends StatelessWidget {
                 .get(),
             builder: (context,roleSnapshot)
             {
+
               if(!roleSnapshot.hasData)
               {
                 return Scaffold(body: Center(child: CircularProgressIndicator()));
 
               }
+              // print('object');
               final role=roleSnapshot.data!['role'];
               if(role=='admin')
               {
@@ -59,7 +67,7 @@ class MyApp extends StatelessWidget {
               }
               else if(role=='user')
               {
-                return HomeScreen();
+                return NavBar();
               }
               return Center(child: CircularProgressIndicator());
               

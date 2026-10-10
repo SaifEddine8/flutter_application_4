@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential> signInWithGoogle(BuildContext context) async {
     final userInGoogle = await GoogleSignIn.instance.authenticate();
     final googleAuth = await userInGoogle.authentication;
     final credential = GoogleAuthProvider.credential(
@@ -13,6 +13,24 @@ class AuthService {
     final userCredential = await FirebaseAuth.instance.signInWithCredential(
       credential,
     );
+    User? user=userCredential.user;
+    final String role = (user!.email ?? '').toLowerCase().endsWith('@admin.com')
+            ? 'admin'
+            : 'user';
+    FirebaseFirestore.instance
+          .collection('usersCollection')
+          .doc(user.uid)
+          .set({
+            'email': userCredential.user!.email,
+            'role': role
+          })
+          .then(
+            (value) => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User Added Successfully')),
+            ),
+          )
+          .catchError((error) => print("Failed to add user: $error"));
+
     return userCredential;
   }
 
@@ -53,7 +71,7 @@ class AuthService {
           .doc(credential.user!.uid)
           .set({
             'email': email.trim(),
-            'role': email.endsWith('@Admin.com'.toLowerCase())
+            'role': email.endsWith('@admin.com'.toLowerCase())
                 ? 'admin'
                 : 'user',
           })
@@ -78,6 +96,6 @@ class AuthService {
   }
 
   void signout() async {
-    await FirebaseAuth.instance.signOut();
+    FirebaseAuth.instance.signOut();
   }
 }

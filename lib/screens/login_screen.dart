@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: ()async {
                     
-                    authService.signInWithGoogle();
+                    authService.signInWithGoogle(context);
                   },
                   child: Row(
                     mainAxisAlignment: .center,
