@@ -3,8 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+
+
+class AuthException implements Exception{
+  String mas;
+  AuthException({required this.mas});
+}
+
 class AuthService {
-  Future<UserCredential> signInWithGoogle(BuildContext context) async {
+  static Future<UserCredential> signInWithGoogle(BuildContext context) async {
     final userInGoogle = await GoogleSignIn.instance.authenticate();
     final googleAuth = await userInGoogle.authentication;
     final credential = GoogleAuthProvider.credential(
@@ -34,7 +41,7 @@ class AuthService {
     return userCredential;
   }
 
-  Future<String> login({
+  static Future<String> login({
     required String email,
     required String password,
   }) async {
@@ -55,7 +62,7 @@ class AuthService {
     }
   }
 
-  Future<String> signUp({
+  static Future<UserCredential> signUp({
     required String email,
     required String password,
     required BuildContext context,
@@ -74,28 +81,36 @@ class AuthService {
             'role': email.endsWith('@admin.com'.toLowerCase())
                 ? 'admin'
                 : 'user',
-          })
-          .then(
-            (value) => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User Added Successfully')),
-            ),
-          )
-          .catchError((error) => print("Failed to add user: $error"));
+          });
 
-      return 'done';
+          return credential;
+          
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        return ('the password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        return ('the account already exists for that email');
-      }
-    } catch (e) {
-      return (e.toString());
+    switch(e.code){
+      case 'invalid-email':
+      throw AuthException(mas: 'invalid email');
+
+
+
+      case 'email-already-in-use':
+      throw AuthException(mas: 'email already exist');
+
+      case 'network-request-failed':
+      throw AuthException(mas: 'network request field');
+
+
+
+      case 'weak-password':
+      throw AuthException(mas: 'weak password');
+
+
+      default:
+      throw AuthException(mas: 'something wrong');      
     }
-    return 'error';
+    }
   }
 
-  void signout() async {
+  static void signout() async {
     FirebaseAuth.instance.signOut();
   }
 }

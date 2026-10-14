@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
+import 'package:flutter_application_4/screens/verification_screen.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -21,7 +22,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordObscured = true;
-  AuthService authService = AuthService();
 
   @override
   void dispose() {
@@ -113,22 +113,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onPressed: () async {
                     if(_formKey.currentState!.validate())
                     {
-                      String result = await authService.signUp(
+
+                      try{
+                     final credential=await AuthService.signUp(
                       email: _emailController.text,
                       password: _passwordController.text,
                       context: context,
                     );
-                    if (result == 'done') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(result)));
-                      
+                    final User? user=credential.user;
+                    await user?.sendEmailVerification();
+                    if(!context.mounted)return;
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>VerificationScreen()));
+
+                    
+                    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('sign up done')));
                     }
+                    on AuthException catch(e)
+                    {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mas)));
+                    }
+                    
                     // Future.delayed(Duration(seconds: 10));
                     _emailController.clear();
                     _passwordController.clear();
@@ -168,7 +172,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 SizedBox(height: 25),
                 ElevatedButton(
-                  onPressed: () => authService.signInWithGoogle(context),
+                  onPressed: () => AuthService.signInWithGoogle(context),
                   child: Row(
                     mainAxisAlignment: .center,
                     children: [

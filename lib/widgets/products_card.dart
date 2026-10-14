@@ -61,7 +61,13 @@ class ProductCard extends StatelessWidget {
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: product.isFav?Icon(
+                              
+                              Icons.favorite,
+                              size: 18,
+                              color: Colors.pink,
+                            ): Icon(
+                              
                               Icons.favorite_border,
                               size: 18,
                               color: Colors.pink,

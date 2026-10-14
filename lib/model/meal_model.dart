@@ -58,7 +58,8 @@ class MealModel {
   {
   return MealModel(
     id:docID,
-    img: map['img'], name: map['name'], price: map['price'], description: map['description'], category: map['category']);
+    img: map['img'], name: map['name'], price: map['price'], description: map['description'], 
+    category: map['category'],isFav: map['isFav']);
 
   }
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/screens/admin_dashboard.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
+import 'package:flutter_application_4/screens/nav_bar.dart';
 import 'package:flutter_application_4/screens/signup_screen.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -19,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordObscured = true;
-  AuthService authService = AuthService();
 
   @override
   void dispose() {
@@ -111,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () async {
                     if(_formKey.currentState!.validate())
                     {
-                      String result = await authService.login(
+                      String result = await AuthService.login(
                       email: _emailController.text,
                       password: _passwordController.text,
                     );
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       .get();
                       if(doc['role']=='user')
                       {
-                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>HomeScreen()), (route) => false);
+                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>NavBar()), (route) => false);
                       }
                       if(doc['role']=='admin')
                       {
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: ()async {
                     
-                    authService.signInWithGoogle(context);
+                    AuthService.signInWithGoogle(context);
                   },
                   child: Row(
                     mainAxisAlignment: .center,

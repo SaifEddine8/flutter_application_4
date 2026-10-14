@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/model/meal_model.dart';
+import 'package:flutter_application_4/screens/fav_screen.dart';
 import 'package:flutter_application_4/screens/login_screen.dart';
 import 'package:flutter_application_4/screens/profile_info.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:flutter_application_4/widgets/category_widget.dart';
+import 'package:flutter_application_4/widgets/fav_card.dart';
 import 'package:flutter_application_4/widgets/products_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  TextEditingController search=TextEditingController();
+  FirebaseAuth firebaseAuth=FirebaseAuth.instance; 
   List<String>categories=[
     'All',
     'Burger',
@@ -109,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                              const SizedBox(width: 10),
                              Expanded(
                                child: TextField(
+                                controller: search,
                       decoration: InputDecoration(
                         hintText: 'search', 
                         enabledBorder: InputBorder.none,
@@ -163,30 +168,67 @@ class _HomeScreenState extends State<HomeScreen> {
                  ),
              ),
              SizedBox(height: size.height*0.02,),
-             StreamBuilder(stream: filter().snapshots(), builder: (context, snapshot) 
-             {
-              if(snapshot.connectionState==ConnectionState.waiting)
-              {
-                return Center(child: CircularProgressIndicator(),);
+             Expanded(
+              child:StreamBuilder(stream: FirebaseFirestore.instance.collection('products').snapshots(), 
+              builder: (context,productSnapshot){
+                if(!productSnapshot.hasData)
+                {
+                  return Center(child: Text('Nothing'),);
+                }
+                final products=productSnapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data(), doc.id))
+                .where((doc)=>doc.category==selectedItem||selectedItem=='All').where((doc)=>doc.name.toLowerCase().contains(search.text)).toList();
+                return StreamBuilder(
+                  stream:FirebaseFirestore.instance.collection('usersCollection').doc(firebaseAuth.currentUser!.uid).collection('favorite').snapshots() , 
+                  builder: (context,favsnnapshot){
+                    if(!favsnnapshot.hasData)
+                    {
+                      return Center(child: Text('Nothing'),);
+                    }
+                    final favId=favsnnapshot.data!.docs.map((f)=>f.id).toSet();
+                    final productWithFav=products.map((p)=>p.copyWith(isFav: favId.contains(p.id))).toList();
+                    return GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2), 
+                    itemCount: productWithFav.length,
+                    itemBuilder: (context,index)=>ProductCard(product: productWithFav[index],
+                    onFavoriteTap: () async{
+                      if(productWithFav[index].isFav)
+                      {
+                        FirebaseFirestore.instance.collection('usersCollection').doc(firebaseAuth.currentUser!.uid)
+                        .collection('favorite').doc(productWithFav[index].id).delete();
+                      }
+                      else{
+                        await addFav(productWithFav[index]);
+                      }
+
+                    } ,));
+                  });
               }
-              else if(!snapshot.hasData || snapshot.data!.docs.isEmpty)
-              {
-                return Center(child: Text('No Products'),);
-              }
-              final products=snapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data() as Map<String,dynamic>, doc.id)).toList();
+              ) ),
+            //  StreamBuilder(stream: filter().snapshots(), builder: (context, snapshot) 
+            //  {
+            //   if(snapshot.connectionState==ConnectionState.waiting)
+            //   {
+            //     return Center(child: CircularProgressIndicator(),);
+            //   }
+            //   else if(!snapshot.hasData || snapshot.data!.docs.isEmpty)
+            //   {
+            //     return Center(child: Text('No Products'),
+            //     );
+            //   }
+            //   final products=snapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data() as Map<String,dynamic>, doc.id)).toList();
         
-             return Expanded(
-               child: GridView.builder(
-                itemCount: products.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:2 
-                ), 
-                itemBuilder: (context,index)=>ProductCard(product: products[index],onFavoriteTap: () =>addFav(products[index]) ,)),
-             );
+            //  return Expanded(
+            //    child: GridView.builder(
+            //     itemCount: products.length,
+            //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            //       crossAxisCount:2 
+            //     ), 
+            //     itemBuilder: (context,index)=>ProductCard(product: products[index],
+            //     onFavoriteTap: () =>addFav(products[index]) ,)),
+            //  );
         
-             }
+            //  }
              
-             ),
+            //  ),
              ElevatedButton(onPressed: (){
               FirebaseAuth.instance.signOut();
              }, child: Text('logout'))
@@ -197,14 +239,14 @@ class _HomeScreenState extends State<HomeScreen> {
       
     );
   }
-  Query filter(){
-    if(selectedItem=='All')
-    {
-      return FirebaseFirestore.instance.collection('products');
+  // Query filter(){
+  //   if(selectedItem=='All')
+  //   {
+  //     return FirebaseFirestore.instance.collection('products');
 
-    }
-    return FirebaseFirestore.instance.collection('products').where('category',isEqualTo:selectedItem );
-  }
+  //   }
+  //   return FirebaseFirestore.instance.collection('products').where('category',isEqualTo:selectedItem );
+  // }
 
   Future<void> addFav(MealModel product)async{
     String uid=FirebaseAuth.instance.currentUser!.uid;

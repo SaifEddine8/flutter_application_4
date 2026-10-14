@@ -45,7 +45,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     final size=MediaQuery.of(context).size;
-    AuthService authService = AuthService();
     return Scaffold(
       appBar: AppBar(
         title: Text('Admin Dashboard'),
@@ -55,7 +54,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              authService.signout();
+              AuthService.signout();
             },
           ),
         ],
