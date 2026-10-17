@@ -1,16 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
+import 'package:flutter_application_4/screens/nav_bar.dart';
 
 class VerificationScreen extends StatelessWidget {
-
-  const VerificationScreen({
-    super.key,
-  });
+  const VerificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final auth=FirebaseAuth.instance;
+    final auth = FirebaseAuth.instance;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -35,9 +33,13 @@ class VerificationScreen extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 Text(
-                  'أرسلنا رابط التحقق إلى:\n${auth.currentUser?.email??''}\nيرجى فتح الإيميل والضغط على الرابط لتفعيل حسابك.',
+                  'أرسلنا رابط التحقق إلى:\n${auth.currentUser?.email ?? ''}\nيرجى فتح الإيميل والضغط على الرابط لتفعيل حسابك.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 40),
 
@@ -45,17 +47,29 @@ class VerificationScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () async{
-                      final User? user=auth.currentUser;
+                    onPressed: () async {
+                      final User? user = auth.currentUser;
                       await user?.reload();
-                      if(!context.mounted)return;
-                        
-                      if(user?.emailVerified==true){
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('email verified successfully')));
+                      if (!context.mounted) return;
 
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>HomeScreen()));
+                      if (user?.emailVerified == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('email verified successfully'),
+                          ),
+                        );
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('please verifiey your account'),
+                          ),
+                        );
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('please verifiey your account')));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
@@ -73,10 +87,22 @@ class VerificationScreen extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 TextButton(
-                  onPressed: () async{
-
-                    final User? user=auth.currentUser;
-                    await user?.sendEmailVerification();
+                  onPressed: () async {
+                    try {
+                      final User? user = auth.currentUser;
+                      if (!context.mounted) return;
+                      await user?.sendEmailVerification();
+                      if (user!.emailVerified) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => NavBar()),
+                        );
+                      }
+                    } on FirebaseException catch (e) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(e.message!)));
+                    }
                   },
                   child: const Text('إعادة إرسال الرابط'),
                 ),
