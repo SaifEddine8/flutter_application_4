@@ -22,6 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  
   bool _isPasswordObscured = true;
 
   @override
@@ -60,6 +61,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 30),
 
                 // الاسم
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'الاسم',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'يرجى إدخال الاسم';
+                    }
+                    return null;
+                  },
+                ),
 
                 // البريد الإلكتروني
                 TextFormField(
@@ -116,6 +133,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       try {
                         final credential = await AuthService.signUp(
                           email: _emailController.text,
+                          displayName: _nameController.text,
                           password: _passwordController.text,
                           context: context,
                         );

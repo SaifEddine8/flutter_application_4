@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/servises/auth_service.dart';
 import 'package:intl/intl.dart';
 
 class ProfileInfo extends StatelessWidget {
@@ -7,6 +8,7 @@ class ProfileInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _nameController=TextEditingController();
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
     return Scaffold(
@@ -27,7 +29,38 @@ class ProfileInfo extends StatelessWidget {
             
             children: [
               CircleAvatar(radius: 50,child: user.photoURL==null?Icon(Icons.person):Image.network(user.photoURL!),),
-              Text('Name : ${user.displayName}'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Name : ${user.displayName}'),
+                  IconButton(onPressed: ()async{
+                    showDialog(context: context, builder: (context){
+                      return AlertDialog(
+                        title:Text('update name'),
+                        content:Column(
+                          children: [
+                            TextField(
+                              controller:_nameController,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder()
+                              ),)
+                          ],
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => {
+                            _nameController.clear(),
+                            Navigator.pop(context)},child: Text('cancel'),),
+                          TextButton(onPressed: ()async {await AuthService.updateDisplayName(_nameController.text);
+                          _nameController.clear();
+                          Navigator.pop(context);
+                          },child: Text('update'),)
+                        ],
+                        );
+                    });
+                  },
+                   icon: Icon(Icons.edit))
+                ],
+              ),
               Text('Email : ${user.email}'),
               Text('Verified email : ${user.emailVerified?'yes':'no'}'),
               Text('UID${user.uid}')

@@ -63,6 +63,7 @@ class AuthService {
   static Future<UserCredential> signUp({
     required String email,
     required String password,
+    String ? displayName,
     required BuildContext context,
   }) async {
     try {
@@ -71,6 +72,7 @@ class AuthService {
             email: email.trim(),
             password: password.trim(),
           );
+          await credential.user?.updateDisplayName(displayName);
       FirebaseFirestore.instance
           .collection('usersCollection')
           .doc(credential.user!.uid)
@@ -129,6 +131,17 @@ class AuthService {
         default:
         throw AuthException(mas: e.code);
       }
+    }
+  }
+
+
+  static Future<void>updateDisplayName(String name)async{
+    try{
+      final user=FirebaseAuth.instance.currentUser;
+      await user?.updateDisplayName(name);
+    }
+    on FirebaseAuthException catch(e){
+      throw AuthException(mas: e.code);
     }
   }
 }
