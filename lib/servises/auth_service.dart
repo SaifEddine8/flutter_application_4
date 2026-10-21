@@ -3,9 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-
-
-class AuthException implements Exception{
+class AuthException implements Exception {
   String mas;
   AuthException({required this.mas});
 }
@@ -20,28 +18,25 @@ class AuthService {
     final userCredential = await FirebaseAuth.instance.signInWithCredential(
       credential,
     );
-    User? user=userCredential.user;
+    User? user = userCredential.user;
     final String role = (user!.email ?? '').toLowerCase().endsWith('@admin.com')
-            ? 'admin'
-            : 'user';
+        ? 'admin'
+        : 'user';
     FirebaseFirestore.instance
-          .collection('usersCollection')
-          .doc(user.uid)
-          .set({
-            'email': userCredential.user!.email,
-            'role': role
-          })
-          .then(
-            (value) => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User Added Successfully')),
-            ),
-          )
-          .catchError((error) => print("Failed to add user: $error"));
+        .collection('usersCollection')
+        .doc(user.uid)
+        .set({'email': userCredential.user!.email, 'role': role})
+        .then(
+          (value) => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User Added Successfully')),
+          ),
+        )
+        .catchError((error) => print("Failed to add user: $error"));
 
     return userCredential;
   }
 
-  static Future<String> login({
+  static Future<UserCredential> login({
     required String email,
     required String password,
   }) async {
@@ -51,14 +46,17 @@ class AuthService {
         password: password,
       );
 
-      return 'done login';
+      return credential;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'invalid-email.') {
-        return 'invalid email';
-      } else if (e.code == 'invalid-credential') {
-        return ('invalid credential');
+      if (e.code == 'invalid-verification-code') {
+        throw AuthException(mas: 'invalid verification');
       }
-      return e.message ?? e.code;
+      if (e.code == 'invalid-email.') {
+        throw AuthException(mas: 'invalid email');
+      } else if (e.code == 'invalid-credential') {
+        throw AuthException(mas: 'invalid credential');
+      }
+      throw AuthException(mas: e.message ?? e.code);
     }
   }
 
@@ -83,30 +81,27 @@ class AuthService {
                 : 'user',
           });
 
-          return credential;
-          
+      return credential;
     } on FirebaseAuthException catch (e) {
-    switch(e.code){
-      case 'invalid-email':
-      throw AuthException(mas: 'invalid email');
+      switch (e.code) {
+        case 'invalid-verification-code':
+          throw AuthException(mas: 'invalid verification');
 
+        case 'invalid-email':
+          throw AuthException(mas: 'invalid email');
 
+        case 'email-already-in-use':
+          throw AuthException(mas: 'email already exist');
 
-      case 'email-already-in-use':
-      throw AuthException(mas: 'email already exist');
+        case 'network-request-failed':
+          throw AuthException(mas: 'network request field');
 
-      case 'network-request-failed':
-      throw AuthException(mas: 'network request field');
+        case 'weak-password':
+          throw AuthException(mas: 'weak password');
 
-
-
-      case 'weak-password':
-      throw AuthException(mas: 'weak password');
-
-
-      default:
-      throw AuthException(mas: 'something wrong');      
-    }
+        default:
+          throw AuthException(mas: 'something wrong');
+      }
     }
   }
 

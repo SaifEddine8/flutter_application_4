@@ -17,10 +17,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 void main() async {
   // 1. التأكد من تحضير بيئة أداء اليدجيتس
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // await FirebaseAnalytics.instance.logEvent(
   //   name: 'selected_content',
   //   parameters: {
@@ -43,6 +40,39 @@ class MyApp extends StatelessWidget {
     return MaterialApp(home: AuthGate());
   }
 
-  
-  
+
+  StreamBuilder<User?> userState() {
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData) {
+          return FutureBuilder(
+            future: FirebaseFirestore.instance
+                .collection('usersCollection')
+                .doc(snapshot.data!.uid)
+                .get(),
+            builder: (context, roleSnapshot) {
+              if (!roleSnapshot.hasData) {
+                return Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              // print('object');
+              if (!snapshot.data!.emailVerified) return LoginScreen();
+              final role = roleSnapshot.data!['role'];
+              if (role == 'admin') {
+                return AdminDashboard();
+              } else if (role == 'user') {
+                return NavBar();
+              }
+              return Center(child: CircularProgressIndicator());
+            },
+          );
+        }
+        return LoginScreen();
+      },
+    );
+  }
 }

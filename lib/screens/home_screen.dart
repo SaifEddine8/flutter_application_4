@@ -18,24 +18,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  TextEditingController search=TextEditingController();
-  FirebaseAuth firebaseAuth=FirebaseAuth.instance; 
-  List<String>categories=[
-    'All',
-    'Burger',
-    'Frise',
-    'Salad'
-  ];
-  String selectedItem='All';
+  TextEditingController search = TextEditingController();
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  List<String> categories = ['All', 'Burger', 'Frise', 'Salad'];
+  String selectedItem = 'All';
   @override
   Widget build(BuildContext context) {
     // List<MealModel>filteredList=
-    final size=MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
     AuthService authService = AuthService();
 
     final firebaseAuth = FirebaseAuth.instance;
     return Scaffold(
-      
       // drawer: Drawer(
       //   child: Column(
       //     mainAxisAlignment: MainAxisAlignment.center,
@@ -57,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       //         onTap: () {
       //           authService.signout();
       //           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>LoginScreen()), (route) => false);
-                
+
       //         },
       //       ),
       //     ],
@@ -82,180 +76,209 @@ class _HomeScreenState extends State<HomeScreen> {
         )
       ],
       ),
+          
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: SizedBox(
-          
           width: .infinity,
           child: Column(
-            
             children: [
-              SizedBox(height: 20,),
-             Row(
-               children: [
-                 Expanded(
-                  flex: 3,
-                   child: SizedBox(
-                    // width: size.width*0.8,
-                     child: Card(
-                      
-                       elevation: 10,
-                       shadowColor: Colors.black,
-                       shape: RoundedRectangleBorder(
-                         borderRadius: BorderRadius.circular(16.0),
-                       ),
-                       child: Padding(
-                         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-                         child: Row(
-                           children: [
-                             Icon(
-                               Icons.search, 
-                               
-                               size: 22,
-                             ),
-                             const SizedBox(width: 10),
-                             Expanded(
-                               child: TextField(
-                                controller: search,
-                      decoration: InputDecoration(
-                        hintText: 'search', 
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(
+                      // width: size.width*0.8,
+                      child: Card(
+                        elevation: 10,
+                        shadowColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 4.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.search, size: 22),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: search,
+                                  decoration: InputDecoration(
+                                    hintText: 'search',
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
-                     ),
-                   ),
-                 ),
-                 SizedBox(width: size.width*0.1,),
-                 Expanded(
-                  flex: 1,
-                   child: Container(
-                    // width: size.width*0.2,
-                    decoration: BoxDecoration(
-                      color: Colors.pink.shade300,
-                      borderRadius: BorderRadius.circular(8)
                     ),
-                    child: Icon(Icons.filter_list_rounded,color: Colors.white,),
-                   ),
-                 )
-               ],
-             ),
-             SizedBox(height: size.height*0.02,),
-             SizedBox(
-              height: size.height*0.06,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemExtent: 100,
-                scrollDirection: .horizontal,
-                itemCount:categories.length ,
-                itemBuilder:(context,index)=>CategoryWidget(
-                  textColor: selectedItem==categories[index]?
-                  Colors.white
-                  :
-                  Colors.black
-                  ,
-                  backgroundColor: selectedItem==categories[index]?
-                  Color(0xCDfd4754)
-                  :
-                  Colors.white
-                  ,
-                  title: categories[index],
-                  onTap: () => setState(() {
-                    selectedItem=categories[index];
-                  }),
-                )
-                 ),
-             ),
-             SizedBox(height: size.height*0.02,),
-             Expanded(
-              child:StreamBuilder(stream: FirebaseFirestore.instance.collection('products').snapshots(), 
-              builder: (context,productSnapshot){
-                if(!productSnapshot.hasData)
-                {
-                  return Center(child: Text('Nothing'),);
-                }
-                final products=productSnapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data(), doc.id))
-                .where((doc)=>doc.category==selectedItem||selectedItem=='All').where((doc)=>doc.name.toLowerCase().contains(search.text)).toList();
-                return StreamBuilder(
-                  stream:FirebaseFirestore.instance.collection('usersCollection').doc(firebaseAuth.currentUser!.uid).collection('favorite').snapshots() , 
-                  builder: (context,favsnnapshot){
-                    if(!favsnnapshot.hasData)
-                    {
-                      return Center(child: Text('Nothing'),);
+                  ),
+                  SizedBox(width: size.width * 0.1),
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      // width: size.width*0.2,
+                      decoration: BoxDecoration(
+                        color: Colors.pink.shade300,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: size.height * 0.02),
+              SizedBox(
+                height: size.height * 0.06,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemExtent: 100,
+                  scrollDirection: .horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) => CategoryWidget(
+                    textColor: selectedItem == categories[index]
+                        ? Colors.white
+                        : Colors.black,
+                    backgroundColor: selectedItem == categories[index]
+                        ? Color(0xCDfd4754)
+                        : Colors.white,
+                    title: categories[index],
+                    onTap: () => setState(() {
+                      selectedItem = categories[index];
+                    }),
+                  ),
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Expanded(
+                child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('products')
+                      .snapshots(),
+                  builder: (context, productSnapshot) {
+                    if (!productSnapshot.hasData) {
+                      return Center(child: Text('Nothing'));
                     }
-                    final favId=favsnnapshot.data!.docs.map((f)=>f.id).toSet();
-                    final productWithFav=products.map((p)=>p.copyWith(isFav: favId.contains(p.id))).toList();
-                    return GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2), 
-                    itemCount: productWithFav.length,
-                    itemBuilder: (context,index)=>ProductCard(product: productWithFav[index],
-                    onFavoriteTap: () async{
-                      if(productWithFav[index].isFav)
-                      {
-                        FirebaseFirestore.instance.collection('usersCollection').doc(firebaseAuth.currentUser!.uid)
-                        .collection('favorite').doc(productWithFav[index].id).delete();
-                      }
-                      else{
-                        await addFav(productWithFav[index]);
-                      }
+                    final products = productSnapshot.data!.docs
+                        .map((doc) => MealModel.fromMap(doc.data(), doc.id))
+                        .where(
+                          (doc) =>
+                              doc.category == selectedItem ||
+                              selectedItem == 'All',
+                        )
+                        .where(
+                          (doc) => doc.name.toLowerCase().contains(search.text),
+                        )
+                        .toList();
+                    return StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('usersCollection')
+                          .doc(firebaseAuth.currentUser!.uid)
+                          .collection('favorite')
+                          .snapshots(),
+                      builder: (context, favsnnapshot) {
+                        if (!favsnnapshot.hasData) {
+                          return Center(child: Text('Nothing'));
+                        }
+                        final favId = favsnnapshot.data!.docs
+                            .map((f) => f.id)
+                            .toSet();
+                        final productWithFav = products
+                            .map((p) => p.copyWith(isFav: favId.contains(p.id)))
+                            .toList();
+                        return GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                              ),
+                          itemCount: productWithFav.length,
+                          itemBuilder: (context, index) => ProductCard(
+                            product: productWithFav[index],
+                            onFavoriteTap: () async {
+                              if (productWithFav[index].isFav) {
+                                FirebaseFirestore.instance
+                                    .collection('usersCollection')
+                                    .doc(firebaseAuth.currentUser!.uid)
+                                    .collection('favorite')
+                                    .doc(productWithFav[index].id)
+                                    .delete();
+                              } else {
+                                await addFav(productWithFav[index]);
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              //  StreamBuilder(stream: filter().snapshots(), builder: (context, snapshot)
+              //  {
+              //   if(snapshot.connectionState==ConnectionState.waiting)
+              //   {
+              //     return Center(child: CircularProgressIndicator(),);
+              //   }
+              //   else if(!snapshot.hasData || snapshot.data!.docs.isEmpty)
+              //   {
+              //     return Center(child: Text('No Products'),
+              //     );
+              //   }
+              //   final products=snapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data() as Map<String,dynamic>, doc.id)).toList();
 
-                    } ,));
-                  });
-              }
-              ) ),
-            //  StreamBuilder(stream: filter().snapshots(), builder: (context, snapshot) 
-            //  {
-            //   if(snapshot.connectionState==ConnectionState.waiting)
-            //   {
-            //     return Center(child: CircularProgressIndicator(),);
-            //   }
-            //   else if(!snapshot.hasData || snapshot.data!.docs.isEmpty)
-            //   {
-            //     return Center(child: Text('No Products'),
-            //     );
-            //   }
-            //   final products=snapshot.data!.docs.map((doc)=>MealModel.fromMap(doc.data() as Map<String,dynamic>, doc.id)).toList();
-        
-            //  return Expanded(
-            //    child: GridView.builder(
-            //     itemCount: products.length,
-            //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            //       crossAxisCount:2 
-            //     ), 
-            //     itemBuilder: (context,index)=>ProductCard(product: products[index],
-            //     onFavoriteTap: () =>addFav(products[index]) ,)),
-            //  );
-        
-            //  }
-             
-            //  ),
-             ElevatedButton(onPressed: (){
-              FirebaseAuth.instance.signOut();
-             }, child: Text('logout'))
+              //  return Expanded(
+              //    child: GridView.builder(
+              //     itemCount: products.length,
+              //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              //       crossAxisCount:2
+              //     ),
+              //     itemBuilder: (context,index)=>ProductCard(product: products[index],
+              //     onFavoriteTap: () =>addFav(products[index]) ,)),
+              //  );
+
+              //  }
+
+              //  ),
+              ElevatedButton(
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                },
+                child: Text('logout'),
+              ),
             ],
           ),
         ),
       ),
-      
     );
   }
-  // Query filter(){
-  //   if(selectedItem=='All')
-  //   {
-  //     return FirebaseFirestore.instance.collection('products');
 
-  //   }
-  //   return FirebaseFirestore.instance.collection('products').where('category',isEqualTo:selectedItem );
-  // }
+  Query filter() {
+    if (selectedItem == 'All') {
+      return FirebaseFirestore.instance.collection('products');
+    }
+    return FirebaseFirestore.instance
+        .collection('products')
+        .where('category', isEqualTo: selectedItem);
+  }
 
-  Future<void> addFav(MealModel product)async{
-    String uid=FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance.collection('usersCollection').doc(uid).collection('favorite').doc(product.id).set(product.toMap());
-
-
-
+  Future<void> addFav(MealModel product) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance
+        .collection('usersCollection')
+        .doc(uid)
+        .collection('favorite')
+        .doc(product.id)
+        .set(product.toMap());
   }
 }

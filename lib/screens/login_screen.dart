@@ -110,36 +110,46 @@ class _LoginScreenState extends State<LoginScreen> {
                 // زر تسجيل الدخول
                 ElevatedButton(
                   onPressed: () async {
-                    if(_formKey.currentState!.validate())
-                    {
-                      String result = await AuthService.login(
-                      email: _emailController.text,
-                      password: _passwordController.text,
-                    );
-                    if (result == 'done login') {
-                      // Navigator.of(context).pushReplacement(
-                      //   MaterialPageRoute(builder: (context) => HomeScreen()),
-                      // );
-                      final doc=await FirebaseFirestore.instance
-                      .collection('usersCollection')
-                      .doc(FirebaseAuth.instance.currentUser!.uid)
-                      .get();
-                      if(doc['role']=='user')
-                      {
-                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>NavBar()), (route) => false);
+                    if (_formKey.currentState!.validate()) {
+                      final result = await AuthService.login(
+                        email: _emailController.text,
+                        password: _passwordController.text,
+                      );
+                      if (!result.user!.emailVerified) {
+                        return;
                       }
-                      if(doc['role']=='admin')
-                      {
-                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>AdminDashboard()), (route) => false);
+                      if (result.user!.emailVerified) {
+                        // Navigator.of(context).pushReplacement(
+                        //   MaterialPageRoute(builder: (context) => HomeScreen()),
+                        // );
+                        final doc = await FirebaseFirestore.instance
+                            .collection('usersCollection')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .get();
+                        if (doc['role'] == 'user') {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => NavBar()),
+                            (route) => false,
+                          );
+                        }
+                        if (doc['role'] == 'admin') {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AdminDashboard(),
+                            ),
+                            (route) => false,
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(result.toString())),
+                        );
                       }
-                    } else {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(result)));
-                    }
-                    // Future.delayed(Duration(seconds: 10));
-                    _emailController.clear();
-                    _passwordController.clear();
+                      // Future.delayed(Duration(seconds: 10));
+                      _emailController.clear();
+                      _passwordController.clear();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -180,8 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: 25),
                 ElevatedButton(
-                  onPressed: ()async {
-                    
+                  onPressed: () async {
                     AuthService.signInWithGoogle(context);
                   },
                   child: Row(

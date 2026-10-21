@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/model/meal_model.dart';
+import 'package:flutter_application_4/screens/products.dart';
 import 'package:flutter_application_4/servises/auth_service.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -44,7 +45,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final size=MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: Text('Admin Dashboard'),
@@ -179,6 +180,28 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               'Add Product',
                               style: TextStyle(color: Colors.white),
                             ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink[300],
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        textStyle: TextStyle(fontSize: 18.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  SizedBox(
+                    width: .infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Products()),
+                        );
+                      },
+                      child: Text(
+                        'show Product',
+                        style: TextStyle(color: Colors.white),
+                      ),
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.pink[300],
                         padding: EdgeInsets.symmetric(vertical: 16.0),
