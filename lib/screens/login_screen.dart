@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/screens/admin_dashboard.dart';
+import 'package:flutter_application_4/screens/forget_password.dart';
 import 'package:flutter_application_4/screens/home_screen.dart';
 import 'package:flutter_application_4/screens/nav_bar.dart';
 import 'package:flutter_application_4/screens/signup_screen.dart';
@@ -153,6 +154,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
+                SizedBox(height: 20,),
+                TextButton(onPressed: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgetPassword()));
+                }, child:Text('نسيت كلمة المرور')),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: .center,

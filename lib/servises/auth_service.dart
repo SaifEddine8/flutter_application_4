@@ -113,4 +113,27 @@ class AuthService {
   static void signout() async {
     FirebaseAuth.instance.signOut();
   }
+
+
+
+
+  static Stream<User?>authState(){
+    return FirebaseAuth.instance.userChanges();
+  }
+
+
+  static Future<void> resendPassword(String email){
+    try{
+      return FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+    }on FirebaseAuthException catch(e){
+      switch(e){
+        case 'invalid-email':
+        throw AuthException(mas: 'invalid email');
+
+        default:
+        throw AuthException(mas: e.code);
+      }
+    }
+  }
 }

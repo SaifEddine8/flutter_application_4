@@ -74,8 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
         subtitle: Text('your favorite food'),
       ), 
       actions: [
-        CircleAvatar(
-          child: Icon(Icons.person),
+        InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileInfo())),
+          child: CircleAvatar(
+            child: Icon(Icons.person),
+          ),
         )
       ],
       ),
